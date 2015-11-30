@@ -13,12 +13,14 @@ endif
 " chordlines
 syn match chordLine /^[ ]*\([(A-H/:[][^ ]*[ ]*\)*\((.*)\)\?$/
 syn match noteLine  /^𝅘𝅥𝅮 .*$/
+syn match kapoLine  /^Kapo.*$/
 syn match chordTab  /\([0-9x]\+-\)\+[0-9x]\+/
 
 
 " The default highlighting.
 hi def link chordLine			     String
 hi def link noteLine			     Type
+hi def link kapoLine			     Keyword
 hi def link chordTab			     Statement
 
 let b:current_syntax = "chords"
