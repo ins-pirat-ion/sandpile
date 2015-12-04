@@ -3,6 +3,8 @@ Things I play with, perhaps useful for anybody else
 
 chart_time_price_volume_logscale.rb
 ===================================
+Displays CSV data from https://data.bitcoinity.org/markets/price_volume on log scale. Colors the volume bars according to the price delta at the corresponding interval. Annotates the min, max and closing values.
+
 Usage:
 
 * grab e.g. https://data.bitcoinity.org/export_data.csv?currency=USD&data_type=price_volume&t=lb&timespan=30d&vu=curr
