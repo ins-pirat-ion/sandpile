@@ -16,6 +16,9 @@ max_volume = 0
 min_value = 1000000000000
 min_volume= 1000000000000
 logscale_arr = []
+max_abs_val_delta_log = 0
+
+first_time = true
 
 ARGF.each do |line|
   linearray = line.split(',')
@@ -23,6 +26,7 @@ ARGF.each do |line|
   ymd = day_time[0].split('-')
   hms = day_time[1].split(':')
   line_time = Time.utc(ymd[0],ymd[1],ymd[2],hms[0],hms[1],hms[2])
+  max_abs_val_delta_log = (Math.log(value / linearray[1].to_f)).abs if (Math.log(value / linearray[1].to_f)).abs > max_abs_val_delta_log if !first_time
   value = linearray[1].to_f
   volume = linearray[2].to_f
   max_value = value if value > max_value
@@ -30,6 +34,7 @@ ARGF.each do |line|
   max_volume = volume if volume > max_volume
   min_volume = volume if volume < min_volume
   logscale_arr.push([line_time, Math.log(value), Math.log(volume)])
+  first_time = false
 end
 
 $close_value = value
@@ -82,14 +87,15 @@ def annotate_val_vol(value, volume)
   height_value =  $canvas_height * (0.9 - 0.8 * (Math.log(value) - $log_min_value)/($log_max_value - $log_min_value))
   height_volume =  $canvas_height * (0.9 - 0.8 * (Math.log(volume) - $log_min_volume)/($log_max_volume - $log_min_volume))
   $gc.stroke('transparent')
-  $gc.fill(if $close then '#606000' else 'black' end)
+  $gc.fill(if $close then '#b06000' else 'black' end)
   $gc.text($canvas_width / 10 - (if $close then 150 else 85 end), height_value, (value.round(2).to_s))
+  $gc.fill(if $close then '#60b000' else 'black' end)
   $gc.text($canvas_width * 0.9 + (if $close then 100 else 10 end), height_volume, (volume.round(2).to_s))
-  $gc.stroke(if $close then '#808000' else 'black' end)
+  $gc.stroke(if $close then '#b06000' else 'black' end)
   $gc.line($canvas_width / 10, height_value, $canvas_width * 0.9, height_value)
   if height_value != height_volume then
-    $gc.fill(if $close then '#a0a000' else 'grey' end)
-    $gc.stroke(if $close then '#a0a000' else 'grey' end)
+    $gc.fill(if $close then '#60b000' else 'grey' end)
+    $gc.stroke(if $close then '#60b000' else 'grey' end)
     $gc.line($canvas_width / 10, height_volume, $canvas_width * 0.9, height_volume)
   end
 end
@@ -135,8 +141,10 @@ end
 
 first_time = true
 logscale_arr.each do |record|
-  $gc.fill(if record[1] == value_prev then 'black' elsif record[1] > value_prev then 'green' else 'red' end)
-  $gc.fill_opacity(0.5)
+  relative_delta_log = (record[1] - value_prev) / max_abs_val_delta_log
+  hue = 60 + 60 * relative_delta_log
+  $gc.fill("hsl(#{hue}, 255, 100)")
+  $gc.fill_opacity(0.2 + 0.4 * relative_delta_log.abs)
   $gc.stroke_width(0)
   $gc.stroke_opacity(0)
   $gc.rectangle(
@@ -145,10 +153,10 @@ logscale_arr.each do |record|
     $canvas_width / 10 + (record[0] - min_time_w) / time_period_w * $canvas_width * 0.8,
     $canvas_height * 0.9 - (record[2] - $log_min_volume) / ($log_max_volume - $log_min_volume) * $canvas_height * 0.8
     )
-  $gc.stroke('#606000')
   $gc.stroke_width(2)
   $gc.fill_opacity(1)
-  $gc.fill('#606000')
+  $gc.stroke("hsl(#{hue}, 100, 80)")
+  $gc.fill("hsl(#{hue}, 100, 80)")
   $gc.line(
     $canvas_width / 10 + (time_prev - min_time_w) / time_period_w * $canvas_width * 0.8,
     $canvas_height * 0.9 - (value_prev - $log_min_value) / ($log_max_value - $log_min_value) * $canvas_height * 0.8,
