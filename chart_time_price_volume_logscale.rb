@@ -1,11 +1,27 @@
 #!/bin/ruby
 
+#
+# ♡ Filip Krška 2015
+# This piece of SW is free
+# copyheart, unlicense, WTFPL whatever free license you want
+# licenses, copywrong laws and all creative monopolies are obsolete anyway ;)
+# feel free to copy, fork, pull request, profit, ... 
+# whatever you want without any warranty
+# make art, not law ;)
+#
+
+
+
 require 'rmagick'
 require 'csv'
+require 'action_view'
+
+include ActionView::Helpers::NumberHelper
+
 
 $canvas_width = 1800
 $canvas_height = 850
-$annotations_n = 8
+$annotations_n = 15
 timestamps_n = 8
 
 labels = ARGF.readline.split(',')
@@ -26,9 +42,16 @@ ARGF.each do |line|
   ymd = day_time[0].split('-')
   hms = day_time[1].split(':')
   line_time = Time.utc(ymd[0],ymd[1],ymd[2],hms[0],hms[1],hms[2])
-  max_abs_val_delta_log = (Math.log(value / linearray[1].to_f)).abs if (Math.log(value / linearray[1].to_f)).abs > max_abs_val_delta_log if !first_time
-  value = linearray[1].to_f
-  volume = linearray[2].to_f
+  max_abs_val_delta_log = (Math.log(value / linearray[1].to_f)).abs if (
+    !first_time
+    && linearray[2].to_f > 0
+    && linearray[1].to_f > 0
+    && (Math.log(value / linearray[1].to_f)).abs > max_abs_val_delta_log
+  )
+  value = linearray[1].to_f if linearray[1].to_f > 0   # previous one instead of invalid value
+  volume = linearray[2].to_f if linearray[2].to_f > 0  # previous one instead of invalid value
+  value = 0.00001 if value <= 0.0                      # some low value instead of invalid one
+  volume = 2000.0 if volume < 2000.0                   # some low value instead of invalid one
   max_value = value if value > max_value
   min_value = value if value < min_value
   max_volume = volume if volume > max_volume
@@ -53,16 +76,20 @@ $gc = Magick::Draw.new
 
 value_prev = logscale_arr[0][1]
 time_prev = min_time - time_delta
-$log_min_value = Math.log(min_value)
+$log_min_value = Math.log(min_value) > -Float::MAX ? Math.log(min_value) : -Float::MAX
 $log_max_value = Math.log(max_value)
-$log_min_volume = Math.log(min_volume)
+$log_min_volume = Math.log(min_volume) > -Float::MAX ? Math.log(min_volume) : -Float::MAX
 $log_max_volume = Math.log(max_volume)
 
 # Annotate
 
 def roundest(min,max)
-  if Math.log10(max).ceil > Math.log10(min).ceil
-    return 10**Math.log10(min).ceil
+  return min if min >=max
+
+  log10minceil = (Math.log10(min) > -Float::MAX ? Math.log10(min) : -Float::MAX).ceil
+  log10maxceil = (Math.log10(max) > -Float::MAX ? Math.log10(max) : -Float::MAX).ceil
+  if log10maxceil > log10minceil
+    return 10**log10minceil
   end
 
   delta_order = Math.log10(max-min).ceil
@@ -84,13 +111,15 @@ end
 $close = false
 
 def annotate_val_vol(value, volume)
-  height_value =  $canvas_height * (0.9 - 0.8 * (Math.log(value) - $log_min_value)/($log_max_value - $log_min_value))
-  height_volume =  $canvas_height * (0.9 - 0.8 * (Math.log(volume) - $log_min_volume)/($log_max_volume - $log_min_volume))
+  log_value = Math.log(value) > -Float::MAX ? Math.log(value) : -Float::MAX
+  log_volume = Math.log(volume) > -Float::MAX ? Math.log(volume) : -Float::MAX
+  height_value =  $canvas_height * (0.9 - 0.8 * (log_value - $log_min_value)/($log_max_value - $log_min_value))
+  height_volume =  $canvas_height * (0.9 - 0.8 * (log_volume - $log_min_volume)/($log_max_volume - $log_min_volume))
   $gc.stroke('transparent')
   $gc.fill(if $close then '#b06000' else 'black' end)
-  $gc.text($canvas_width / 10 - (if $close then 150 else 85 end), height_value, (value.round(2).to_s))
+  $gc.text($canvas_width / 10 - (if $close then 150 else 85 end), height_value, number_to_human(value.round(2).to_s, precision: 6))
   $gc.fill(if $close then '#60b000' else 'black' end)
-  $gc.text($canvas_width * 0.9 + (if $close then 100 else 10 end), height_volume, (volume.round(2).to_s))
+  $gc.text($canvas_width * 0.9 + (if $close then 80 else 10 end), height_volume, number_to_human(volume.round(2).to_s, precision: 6))
   $gc.stroke(if $close then '#b06000' else 'black' end)
   $gc.line($canvas_width / 10, height_value, $canvas_width * 0.9, height_value)
   if height_value != height_volume then
@@ -142,9 +171,17 @@ end
 first_time = true
 logscale_arr.each do |record|
   relative_delta_log = (record[1] - value_prev) / max_abs_val_delta_log
-  hue = 60 + 60 * relative_delta_log
+  opacity_correction = 1
+  if relative_delta_log > 0.03 then
+    hue = 120
+  elsif relative_delta_log < -0.03 then
+    hue = 360
+  else
+    hue = 200
+    opacity_correction = 0.2
+  end
   $gc.fill("hsl(#{hue}, 255, 100)")
-  $gc.fill_opacity(0.2 + 0.4 * relative_delta_log.abs)
+  $gc.fill_opacity(0.2 + 0.4 * (relative_delta_log.abs)**0.5 * opacity_correction)
   $gc.stroke_width(0)
   $gc.stroke_opacity(0)
   $gc.rectangle(
