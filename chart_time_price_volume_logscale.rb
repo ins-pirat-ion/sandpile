@@ -43,10 +43,10 @@ ARGF.each do |line|
   hms = day_time[1].split(':')
   line_time = Time.utc(ymd[0],ymd[1],ymd[2],hms[0],hms[1],hms[2])
   max_abs_val_delta_log = (Math.log(value / linearray[1].to_f)).abs if (
-    !first_time
-    && linearray[2].to_f > 0
-    && linearray[1].to_f > 0
-    && (Math.log(value / linearray[1].to_f)).abs > max_abs_val_delta_log
+    !first_time &&
+    linearray[2].to_f > 0 &&
+    linearray[1].to_f > 0 &&
+    (Math.log(value / linearray[1].to_f)).abs > max_abs_val_delta_log
   )
   value = linearray[1].to_f if linearray[1].to_f > 0   # previous one instead of invalid value
   volume = linearray[2].to_f if linearray[2].to_f > 0  # previous one instead of invalid value
