@@ -1,4 +1,4 @@
-#!/bin/ruby
+#!/usr/bin/ruby
 
 #
 # ♡ Filip Krška 2015
@@ -12,7 +12,7 @@
 
 
 
-require 'rmagick'
+require 'RMagick'
 require 'csv'
 require 'action_view'
 
@@ -21,6 +21,10 @@ include ActionView::Helpers::NumberHelper
 
 $canvas_width = 1800
 $canvas_height = 850
+$chart_x_rmargin = 250
+$chart_x_lmargin = 150
+$chart_width = $canvas_width - $chart_x_rmargin - $chart_x_lmargin
+$timetextwidth = 140
 $annotations_n = 15
 timestamps_n = 8
 
@@ -33,6 +37,8 @@ min_value = 1000000000000
 min_volume= 1000000000000
 logscale_arr = []
 max_abs_val_delta_log = 0
+line_time_delta = 1
+line_time = 0
 
 first_time = true
 
@@ -41,12 +47,14 @@ ARGF.each do |line|
   day_time = linearray[0].split()
   ymd = day_time[0].split('-')
   hms = day_time[1].split(':')
+  time_prev = line_time if !first_time
   line_time = Time.utc(ymd[0],ymd[1],ymd[2],hms[0],hms[1],hms[2])
-  max_abs_val_delta_log = (Math.log(value / linearray[1].to_f)).abs if (
+  line_time_delta = line_time - time_prev if !first_time
+  max_abs_val_delta_log = (Math.log(value / linearray[1].to_f)/line_time_delta).abs if (
     !first_time &&
     linearray[2].to_f > 0 &&
     linearray[1].to_f > 0 &&
-    (Math.log(value / linearray[1].to_f)).abs > max_abs_val_delta_log
+    (Math.log(value / linearray[1].to_f)/line_time_delta).abs > max_abs_val_delta_log
   )
   value = linearray[1].to_f if linearray[1].to_f > 0   # previous one instead of invalid value
   volume = linearray[2].to_f if linearray[2].to_f > 0  # previous one instead of invalid value
@@ -56,7 +64,7 @@ ARGF.each do |line|
   min_value = value if value < min_value
   max_volume = volume if volume > max_volume
   min_volume = volume if volume < min_volume
-  logscale_arr.push([line_time, Math.log(value), Math.log(volume)])
+  logscale_arr.push([line_time, Math.log(value), Math.log(volume), line_time_delta])
   first_time = false
 end
 
@@ -76,10 +84,20 @@ $gc = Magick::Draw.new
 
 value_prev = logscale_arr[0][1]
 time_prev = min_time - time_delta
-$log_min_value = Math.log(min_value) > -Float::MAX ? Math.log(min_value) : -Float::MAX
-$log_max_value = Math.log(max_value)
-$log_min_volume = Math.log(min_volume) > -Float::MAX ? Math.log(min_volume) : -Float::MAX
-$log_max_volume = Math.log(max_volume)
+$log_min_value = $orig_log_min_value = Math.log(min_value) > -Float::MAX ? Math.log(min_value) : -Float::MAX
+$log_max_value = $orig_log_max_value = Math.log(max_value)
+$log_min_volume = $orig_log_min_volume = Math.log(min_volume) > -Float::MAX ? Math.log(min_volume) : -Float::MAX
+$log_max_volume = $orig_log_max_volume = Math.log(max_volume)
+
+if $log_max_value - $log_min_value < $log_max_volume - $log_min_volume then
+  log_avg_value = ($log_min_value + $log_max_value) / 2
+  $log_min_value = log_avg_value - ($log_max_volume - $log_min_volume) / 2
+  $log_max_value = $log_min_value + $log_max_volume - $log_min_volume
+else
+  log_avg_volume = ($log_min_volume + $log_max_volume) / 2
+  $log_min_volume = log_avg_volume - ($log_max_value - $log_min_value) / 2
+  $log_max_volume = $log_min_volume + $log_max_value - $log_min_value
+end
 
 # Annotate
 
@@ -115,24 +133,39 @@ def annotate_val_vol(value, volume)
   log_volume = Math.log(volume) > -Float::MAX ? Math.log(volume) : -Float::MAX
   height_value =  $canvas_height * (0.9 - 0.8 * (log_value - $log_min_value)/($log_max_value - $log_min_value))
   height_volume =  $canvas_height * (0.9 - 0.8 * (log_volume - $log_min_volume)/($log_max_volume - $log_min_volume))
-  $gc.stroke('transparent')
-  $gc.fill(if $close then '#b06000' else 'black' end)
-  $gc.text($canvas_width / 10 - (if $close then 150 else 85 end), height_value, number_to_human(value.round(2).to_s, precision: 6))
-  $gc.fill(if $close then '#60b000' else 'black' end)
-  $gc.text($canvas_width * 0.9 + (if $close then 80 else 10 end), height_volume, number_to_human(volume.round(2).to_s, precision: 6))
-  $gc.stroke(if $close then '#b06000' else 'black' end)
-  $gc.line($canvas_width / 10, height_value, $canvas_width * 0.9, height_value)
+
   if height_value != height_volume then
-    $gc.fill(if $close then '#60b000' else 'grey' end)
-    $gc.stroke(if $close then '#60b000' else 'grey' end)
-    $gc.line($canvas_width / 10, height_volume, $canvas_width * 0.9, height_volume)
+    $gc.fill(if $close then '#20b000' else 'grey' end)
+    $gc.stroke(if $close then '#20b000' else 'grey' end)
+    $gc.line($chart_x_rmargin, height_volume, $canvas_width - $chart_x_lmargin, height_volume)
   end
+
+  if log_value < 0.98 * $orig_log_max_value + 0.02 * $orig_log_min_value &&
+    log_value > 0.02 * $orig_log_max_value + 0.98 * $orig_log_min_value ||
+    $force_text
+  then
+    $gc.stroke('transparent')
+    $gc.fill(if $close then '#b02000' else 'black' end)
+    $gc.text($canvas_width - $chart_x_lmargin + 10 + (if $close then $chart_x_lmargin * 0.4 else 0 end),
+      height_value, number_to_human(value.round(2).to_s, precision: 6)
+    )
+    $gc.stroke(if $close then '#b02000' else 'black' end)
+    $gc.line($chart_x_rmargin, height_value, $canvas_width - $chart_x_lmargin, height_value)
+  end
+
+  $gc.stroke('transparent')
+  $gc.fill(if $close then '#20b000' else 'black' end)
+  $gc.text((if $close then 0 else $chart_x_rmargin * 0.4 end) + 10, height_volume, number_to_human(volume.round(2).to_s, precision: 6))
 end
 
 $gc.stroke_width(2)
 
+$force_text = true
+
 annotate_val_vol(min_value, min_volume)
 annotate_val_vol(max_value, max_volume)
+
+$force_text = false
 
 $annotations_n.times do |i|
   j=i+1
@@ -147,19 +180,20 @@ $annotations_n.times do |i|
 end
 
 $close = true
+$force_text = true
 
 annotate_val_vol($close_value, $close_volume)
 
 $gc.stroke('transparent')
 $gc.fill('black')
-$gc.text($canvas_width / 10 - 85, $canvas_height * 0.1 - 30, labels[1])
-$gc.text($canvas_width * 0.9 + 10 , $canvas_height * 0.1 - 30, labels[2])
+$gc.text($chart_x_rmargin * 0.4 + 10, $canvas_height * 0.1 - 30, labels[2])
+$gc.text($canvas_width - $chart_x_lmargin + 10, $canvas_height * 0.1 - 30, labels[1])
 
 (timestamps_n).times do |i|
   time = ((timestamps_n - 1 - i) * min_time.to_f + i * max_time.to_f)/(timestamps_n - 1)
-  x = $canvas_width * (0.1 + (time - min_time_w.to_f)/time_period_w*0.8)
+  x = $chart_x_rmargin + $chart_width * (time - min_time_w.to_f)/time_period_w
   $gc.stroke('transparent')
-  $gc.text(x - 70, $canvas_height * 0.9 + 30,
+  $gc.text(x - $timetextwidth / 2, $canvas_height * 0.9 + 30,
     Time.at(time).utc.to_s
   )
   $gc.stroke('black')
@@ -170,7 +204,7 @@ end
 
 first_time = true
 logscale_arr.each do |record|
-  relative_delta_log = (record[1] - value_prev) / max_abs_val_delta_log
+  relative_delta_log = (record[1] - value_prev)/(record[3] * max_abs_val_delta_log)
   opacity_correction = 1
   if relative_delta_log > 0.03 then
     hue = 120
@@ -185,9 +219,9 @@ logscale_arr.each do |record|
   $gc.stroke_width(0)
   $gc.stroke_opacity(0)
   $gc.rectangle(
-    $canvas_width / 10 + (time_prev - min_time_w) / time_period_w * $canvas_width * 0.8,
+    $chart_x_rmargin + (time_prev - min_time_w) / time_period_w * $chart_width,
     $canvas_height * 0.9,
-    $canvas_width / 10 + (record[0] - min_time_w) / time_period_w * $canvas_width * 0.8,
+    $chart_x_rmargin + (record[0] - min_time_w) / time_period_w * $chart_width,
     $canvas_height * 0.9 - (record[2] - $log_min_volume) / ($log_max_volume - $log_min_volume) * $canvas_height * 0.8
     )
   $gc.stroke_width(2)
@@ -195,9 +229,9 @@ logscale_arr.each do |record|
   $gc.stroke("hsl(#{hue}, 100, 80)")
   $gc.fill("hsl(#{hue}, 100, 80)")
   $gc.line(
-    $canvas_width / 10 + (time_prev - min_time_w) / time_period_w * $canvas_width * 0.8,
+    $chart_x_rmargin + (time_prev - min_time_w) / time_period_w * $chart_width,
     $canvas_height * 0.9 - (value_prev - $log_min_value) / ($log_max_value - $log_min_value) * $canvas_height * 0.8,
-    $canvas_width / 10 + (record[0] - min_time_w) / time_period_w * $canvas_width * 0.8,
+    $chart_x_rmargin + (record[0] - min_time_w) / time_period_w * $chart_width,
     $canvas_height * 0.9 - (record[1] - $log_min_value) / ($log_max_value - $log_min_value) * $canvas_height * 0.8
     ) if !first_time
   value_prev = record[1]
