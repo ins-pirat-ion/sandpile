@@ -52,7 +52,7 @@ def flatten(note)
   end
 end
 
-  $sharp_seq = ["C", "G", "D", "A", "E", $german ? "H" : "B", "F#", "C#", "G#", "D#", "A#", "F"]
+$sharp_seq = ["C", "G", "D", "A", "E", $german ? "H" : "B", "F#", "C#", "G#", "D#", "A#", "F"]
 
 if $quints
   begin
