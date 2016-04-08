@@ -32,18 +32,18 @@ chords_transpose.rb
 ===================
 Transposes chords and solos in plain text.
 
-* Expects format understandable by chords.vim
+* Expects format understandable by `chords.vim`
 * Usage
 ```
 chords_transpose.rb -f E -t C# -b < song_in_E > song_in_C#
 ```
 * parameters
-  * -f <FROM> from key
-  * -t <TO> to key
-  * -q <QUINTS> how many quints to shift (if provided, -f and -t are ignored)
-  * -b prefer flat in output
-  * -H use German musical nomenclature (H instead of B, B means Bb)
-  * -h usage
+  * `-f <FROM>` from key
+  * `-t <TO>` to key
+  * `-q <QUINTS>` how many quints to shift (if provided, `-f` and `-t` are ignored)
+  * `-b` prefer flat in output
+  * `-H` use German musical nomenclature (H instead of B, B means Bb)
+  * `-h` usage
 
 * limitations
   * Doesn't transpose chord explanations
