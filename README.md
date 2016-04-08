@@ -32,7 +32,7 @@ chords_transpose.rb
 ===================
 Transposes chords and solos in plain text.
 
-* Expects format understandable by `chords.vim`
+* Expects format understandable by `chords.vim` i.e. chords and solos on separate lines
 * Usage
 ```
 chords_transpose.rb -f E -t Cb -b < song_in_E > song_in_Cb
