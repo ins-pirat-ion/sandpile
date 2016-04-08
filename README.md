@@ -3,11 +3,11 @@ Things I play with, perhaps useful for anybody else
 
 chart_time_price_volume_logscale.rb
 ===================================
-Displays CSV data from `https://data.bitcoinity.org/markets/price_volume` on log scale. Colors the volume bars according to the price delta at the corresponding interval. Annotates the min, max and closing values.
+Displays CSV data from https://data.bitcoinity.org/markets/price_volume on log scale. Colors the volume bars according to the price delta at the corresponding interval. Annotates the min, max and closing values.
 
 Usage:
 
-* grab e.g. `https://data.bitcoinity.org/export_data.csv?currency=USD&data_type=price_volume&t=lb&timespan=30d&vu=curr`
+* grab e.g. https://data.bitcoinity.org/export_data.csv?currency=USD&data_type=price_volume&t=lb&timespan=30d&vu=curr
 * `./chart_time_price_volume_logscale.rb /tmp/bitcoinity_data.csv`
 * `eog /tmp/ctpvl_output.png`
 
@@ -24,7 +24,7 @@ Usage:
 * comments like `( .... )` at the end of chord line
 * objects like `Lyrics, music: Autor`, `R:`, `Intro:` ...
 * keep enough spaces after chords so they can be transposed without formatting loss
-* chords.vim compatible examples at `https://github.com/ins-pirat-ion/chords-and-tabs`
+* chords.vim compatible examples at https://github.com/ins-pirat-ion/chords-and-tabs
 * `:source /path/to/chords.vim` or put `chords.vim` to `$VIMRUNTIME/syntax` and `:se syntax=chords`
 * to obtain printable output use `:source $VIMRUNTIME/syntax/2html.vim`
 
