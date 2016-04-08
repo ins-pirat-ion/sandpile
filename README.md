@@ -35,7 +35,7 @@ Transposes chords and solos in plain text.
 * Expects format understandable by `chords.vim`
 * Usage
 ```
-chords_transpose.rb -f E -t C# -b < song_in_E > song_in_C#
+chords_transpose.rb -f E -t Cb -b < song_in_E > song_in_Cb
 ```
 * parameters
   * `-f <FROM>` from key
