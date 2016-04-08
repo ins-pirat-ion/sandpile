@@ -72,8 +72,6 @@ else
   my_abort "Either <-q QUINTS> or <-f FROM -t TO> shall be supplied"
 end
 
-$stderr.puts "-b #{$flat}\n-q #{$quints}\n-f #{$from}\n-t #{$to}"
-
 def transpose(chord, quints, flat, next_char)
   orig_note = chord.match(/^[ABCDEFG#{$opt_H}][#b]?/)[0]
   orig_len = chord.size
