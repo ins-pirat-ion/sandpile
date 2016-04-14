@@ -91,7 +91,7 @@ def transpose(chord, quints, flat, next_char)
       $fwd_correction = correction - 1
       $stderr.puts "Warning: not enough space after #{chord} on line #{$lineno}"
     end
-  elsif next_char =~ /[\/±+-]/
+  elsif next_char =~ /[\/+-]/
     $fwd_correction -= transposed_len - orig_len
     next_plus_white = next_char
   end
@@ -108,8 +108,13 @@ $stdin.readlines.each do |line|
       transpose($1, $quints, $flat, $2)
     }
   elsif line =~ /^𝅘𝅥𝅮 /
-    puts line.gsub(/([ABCDEFG#{$opt_H}][#b]?)([±+-]| +|$)/){|match|
+    puts line.gsub(/([ABCDEFG#{$opt_H}][#b]?±*)([+-]| +|$)/){|match|
       transpose($1, $quints, $flat, $2)
+    }
+  elsif /^Orig: ([ABCDEFG#{$opt_H}][#b]?)/.match(line) and $to
+    orig = $~[1]
+    puts line.sub(/( - Kapo: [1-9][0-9]?)?$/){|match|
+      " - Kapo: #{($sharp_seq.index($to) - $sharp_seq.index(sharpen(orig))) * 5 % 12}"
     }
   else
     puts line

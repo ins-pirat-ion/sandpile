@@ -30,21 +30,32 @@ Usage:
 
 chords_transpose.rb
 ===================
-Transposes chords and solos in plain text.
+Features
+--------
+* Transposes chords and solos in plain text
+* If `Orig: <KEY>` is provided along with `-t <TO>` appends or replaces ` - Kapo: #`
+* Attempts to keep formatting, best effort if not enough spaces after chords
+* If chords has bass `/<Note>` suffix it is transposed as well
 
+Prerequisites
+-------------
 * Expects format understandable by `chords.vim` i.e. chords and solos on separate lines
+* Allowed chars after notes in solos: ±
+* Allowed chars between notes in solos: +, -
 * Usage
 ```
 chords_transpose.rb -f E -t Cb -b < song_in_E > song_in_Cb
 ```
-* parameters
-  * `-f <FROM>` from key
-  * `-t <TO>` to key
-  * `-q <QUINTS>` how many quints to shift (if provided, `-f` and `-t` are ignored)
-  * `-b` prefer flat in output
-  * `-H` use German musical nomenclature (H instead of B, B means Bb)
-  * `-h` usage
+Parameters
+----------
+* `-f <FROM>` from key
+* `-t <TO>` to key
+* `-q <QUINTS>` how many quints to shift (if provided, `-f` and `-t` are ignored)
+* `-b` prefer flat in output
+* `-H` use German musical nomenclature (H instead of B, B means Bb)
+* `-h` usage
 
-* limitations
-  * Doesn't transpose chord explanations
-  * Doesn't transpose in comments, objects, non-chord, non-solo lines
+Limitations
+-----------
+* Doesn't transpose chord explanations
+* Doesn't transpose in comments, objects, non-chord, non-solo lines
