@@ -34,7 +34,7 @@ Features
 --------
 * Transposes chords and solos in plain text
 * If `Orig: <KEY>` is provided along with `-t <TO>` appends or replaces ` - Kapo: #`
-* Attempts to keep formatting, best effort if not enough spaces after chords
+* Attempts to keep formatting, best effort (+ warning on stderr) if not enough spaces after chords
 * If chords has bass `/<Note>` suffix it is transposed as well
 
 Prerequisites
