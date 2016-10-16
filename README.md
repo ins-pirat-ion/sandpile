@@ -18,7 +18,7 @@ Highlights lines with chords, solos, chord explanations
 Usage:
 
 * write lyrics + chords on separate lines
-* solos with `𝅘𝅥𝅮 ` at the beginning of line
+* solos with `♪ ` at the beginning of line
 * chord explanations like `Chord        x-x-0-2-1-1`
 * you can use repetitions like `[:6x ....  :]`
 * comments like `( .... )` at the end of chord line
