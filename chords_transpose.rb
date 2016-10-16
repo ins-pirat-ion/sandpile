@@ -26,33 +26,35 @@ def my_abort(message)
   abort "#{caller.join("\n")}: #{message}\n"
 end
 
-$opt_H = $german ? "H" : ""
-
 def sharpen(note)
-  note =~ /^[ABCDEFG#{$opt_H}][b#]?$/ or my_abort "'#{note}' is not a note"
-  if note =~ /[ABCDEFG]b/
-    sharp_tab = {"Ab" => "G#", "Bb" => "A#", "Db" => "C#", "Eb" => "D#", "Gb" => "F#", "Ab" => "G#"}
+  note =~ /^[ABCDEFGH][b#]?$/ or my_abort "'#{note}' is not a note"
+  if note =~ /[ABCDEFGH]b/
+    sharp_tab = {"Ab" => "G#", "Bb" => "A#", "Db" => "C#", "Eb" => "D#", "Gb" => "F#"}
     sharp_note = sharp_tab[note] or my_abort "'#{note}' is not a note"
     return sharp_note
-  elsif (note == "B" && $german)
+  elsif (note == "B" && !$german)
     return "A#"
+  elsif (note == "H" && !$german)
+    return "B"
   else
     return note
   end
 end
 
 def flatten(note)
-  note =~ /^[ABCDEFG#{$opt_H}][b#]?$/ or my_abort "'#{note}' is not a note"
-  if note =~ /[ABCDEFG#{$opt_H}]#/
+  note =~ /^[ABCDEFGH][b#]?$/ or my_abort "'#{note}' is not a note"
+  if note =~ /[ABCDEFGH]#/
     flat_tab = {"A#" => $german ? "B" : "Bb", "C#" => "Db", "D#" => "Eb", "F#" => "Gb", "G#" => "Ab"}
     flat_note = flat_tab[note] or my_abort "'#{note}' is not a note"
     return flat_note
+  elsif (note == "H" && !$german)
+    return "B"
   else
     return note
   end
 end
 
-$sharp_seq = ["C", "G", "D", "A", "E", $german ? "H" : "B", "F#", "C#", "G#", "D#", "A#", "F"]
+$sharp_seq = ["C", "G", "D", "A", "E", $german ? "H" : "B", "F#", "C#", "G#", "D#", $german ? "B" : "A#", "F"]
 
 if $quints
   begin
@@ -73,7 +75,7 @@ else
 end
 
 def transpose(chord, quints, flat, next_char)
-  orig_note = chord.match(/^[ABCDEFG#{$opt_H}][#b]?/)[0]
+  orig_note = chord.match(/^[ABCDEFGH][#b]?/)[0]
   orig_len = chord.size
   orig_sharpened = sharpen(orig_note)
   transposed_note = $sharp_seq[($sharp_seq.index(orig_sharpened) + quints) % 12]
@@ -103,17 +105,17 @@ $lineno = 0
 $stdin.readlines.each do |line|
   $fwd_correction = 0
   $lineno += 1
-  if line =~ /^[ ]*([\(ABCDEFG#{$opt_H}\/\[:][^ ]*[ ]*)*(\(.*\))?$/
-    puts line.gsub(/([ABCDEFG#{$opt_H}][^ \/]*)(\/| +|$)/){|match|
+  if line =~ /^[ ]*([\(ABCDEFGH\/\[:][^ ]*[ ]*)*(\(.*\))?$/
+    puts line.gsub(/([ABCDEFGH][^ \/]*)(\/| +|$)/){|match|
       transpose($1, $quints, $flat, $2)
     }
   elsif line =~ /^𝅘𝅥𝅮 /
-    puts line.gsub(/([ABCDEFG#{$opt_H}][#b]?±*)([+-]| +|$)/){|match|
+    puts line.gsub(/([ABCDEFGH][#b]?±*)([+-]| +|$)/){|match|
       transpose($1, $quints, $flat, $2)
     }
-  elsif /^Orig: ([ABCDEFG#{$opt_H}][#b]?)/.match(line) and $to
+  elsif /^Orig: ([ABCDEFGH][#b]?)/.match(line) and $to
     orig = $~[1]
-    puts line.sub(/( - Kapo: [1-9][0-9]?)?$/){|match|
+    puts line.sub(/( - Kapo: [0-9][0-9]?)?$/){|match|
       " - Kapo: #{($sharp_seq.index($to) - $sharp_seq.index(sharpen(orig))) * 5 % 12}"
     }
   else

@@ -11,16 +11,18 @@ if exists("b:current_syntax")
 endif
 
 " chordlines
+syn match titleLine /\%1l.*/
 syn match chordLine /^[ ]*\([(A-H/:\[[][^ ]*[ ]*\)*\((.*)\)\?$/
-syn match noteLine  /^𝅘𝅥𝅮 .*$/
 syn match objectLine  /^[[:alnum:], ]*:\( .*\|\)$/
-syn match chordTab  /\([0-9x]\+-\)\+[0-9x]\+/
+syn match chordTabLine  /^.*\([0-9x]\+-\)\{3,}[0-9x]\+.*$/
+syn match noteLine  /^[♪] .*$/
 
 
 " The default highlighting.
-hi def link chordLine			     String
-hi def link noteLine			     Type
-hi def link objectLine			     Keyword
-hi def link chordTab			     Statement
+hi def titleLine			     cterm=bold ctermfg=16
+hi def chordLine			     cterm=bold ctermfg=124
+hi def noteLine				     ctermfg=28
+hi def objectLine			     cterm=bold ctermfg=24
+hi def chordTabLine			     ctermfg=94
 
 let b:current_syntax = "chords"
