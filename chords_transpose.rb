@@ -109,7 +109,7 @@ $stdin.readlines.each do |line|
     puts line.gsub(/([ABCDEFGH][^ \/]*)(\/| +|$)/){|match|
       transpose($1, $quints, $flat, $2)
     }
-  elsif line =~ /^𝅘𝅥𝅮 /
+  elsif line =~ /^[𝅘𝅥𝅮♪] /
     puts line.gsub(/([ABCDEFGH][#b]?±*)([+-]| +|$)/){|match|
       transpose($1, $quints, $flat, $2)
     }
