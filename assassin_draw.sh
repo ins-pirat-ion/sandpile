@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+# Usage: (in empty directory)
+#        touch player1 ... playern
+#        assassin_draw.sh *
+#
+
 players="$@"
 count=$#
 permutation=`shuf -i 1-$count`
