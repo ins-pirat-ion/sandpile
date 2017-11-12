@@ -59,3 +59,17 @@ Limitations
 -----------
 * Doesn't transpose chord explanations
 * Doesn't transpose in comments, objects, non-chord, non-solo lines
+
+assassin_draw.sh
+================
+Features
+--------
+* Draws a random `killer->victim` circle for group of assassin-like players
+* see `https://en.wikipedia.org/wiki/Assassin_(game)`
+Usage
+-----
+* stay in empty directory
+* `touch <player1> ... <playerN>`
+* `assassin_draw.sh *`
+* send `<playerI>` file to `<playerI>`, don't look into it :), it will contain `<playerJ>` - his victim
+
