@@ -64,7 +64,7 @@ assassin_draw.sh
 ================
 Features
 --------
-* Draws a random `killer->victim` circle for group of assassin-like players
+* Draws a random `killer->victim` circle for group of assassin-like game players
 * see https://en.wikipedia.org/wiki/Assassin_(game)
 
 Usage
