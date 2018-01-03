@@ -40,8 +40,6 @@ Features
 Prerequisites
 -------------
 * Expects format understandable by `chords.vim` i.e. chords and solos on separate lines
-* Allowed chars after notes in solos: ±
-* Allowed chars between notes in solos: +, -
 * Usage
 ```
 chords_transpose.rb -f E -t Cb -b < song_in_E > song_in_Cb
