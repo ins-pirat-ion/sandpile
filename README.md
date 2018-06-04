@@ -72,3 +72,7 @@ Usage
 * `assassin_draw.sh *`
 * send `<playerI>` file to `<playerI>`, don't look into it :), it will contain `<playerJ>` - his victim
 
+ansible
+=======
+
+Some random playbooks and roles
