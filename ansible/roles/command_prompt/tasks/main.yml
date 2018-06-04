@@ -5,9 +5,8 @@
   template:
     src: bin_prompt.sh.j2
     dest: /usr/local/bin/prompt.sh
-    mode: 0755
 
-- name: install /etc/profile.d/prompt.sh
+- name: install /etc/profile.d/zzz_prompt.sh
   template:
     src: profile_prompt.sh.j2
-    dest: /etc/profile.d/prompt.sh
+    dest: /etc/profile.d/zzz_prompt.sh
