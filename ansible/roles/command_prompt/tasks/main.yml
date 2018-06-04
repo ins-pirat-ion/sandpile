@@ -1,0 +1,13 @@
+---
+# tasks file for command_prompt
+
+- name: install /usr/local/bin/prompt.sh
+  template:
+    src: bin_prompt.sh.j2
+    dest: /usr/local/bin/prompt.sh
+    mode: 0755
+
+- name: install /etc/profile.d/prompt.sh
+  template:
+    src: profile_prompt.sh.j2
+    dest: /etc/profile.d/prompt.sh

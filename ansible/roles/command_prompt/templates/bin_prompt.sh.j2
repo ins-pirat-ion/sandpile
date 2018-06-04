@@ -1,0 +1,29 @@
+#!/bin/bash
+
+S=$?
+
+END="\[\e[0m\]"
+BLUE="\[\e[34m\]"
+RED="\[\e[31m\]"
+GREEN="\[\e[32m\]"
+MAGENTA="\[\e[35m\]"
+YELLOW="\[\e[33m\]"
+
+if [[ $S -eq 0 ]]; then
+        DOLLAR="${YELLOW}\\$"
+else
+        DOLLAR="${RED}(${S})\\$"
+fi
+
+case "$TERM" in
+xterm*)
+	TITLEBAR="\[\033]0;\u@\h:\w\007\]"
+	;;
+*)
+	TITLEBAR=""
+	;;
+esac
+
+
+PS1="${TITLEBAR}[${BLUE}\u${END}@${GREEN}\h${END} ${MAGENTA}\W${END}]${DOLLAR}${END} "
+

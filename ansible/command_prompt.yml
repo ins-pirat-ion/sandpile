@@ -1,0 +1,6 @@
+- name: Install PROMPT_COMMAND with retval report
+  hosts: all
+  gather_facts: no
+  remote_user: root
+  roles:
+    - command_prompt
